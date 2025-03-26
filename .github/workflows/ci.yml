@@ -26,4 +26,9 @@ jobs:
     steps: 
       - name: Déclencher le déploiement sur Render 
         run: | 
-          curl -X POST "https://api.render.com/deploy/srv-cvhsssiqgecs73d4hlv0?key=2UCZG7aHRU4" 
+          curl -X POST "https://api.render.com/deploy/srv-cvhsssiqgecs73d4hlv0?key=2UCZG7aHRU4"
+          
+
+      - name: Analyse du code avec SonarQube 
+        run: | 
+          sonar-scanner \ -Dsonar.organization=habibsem \ -Dsonar.projectKey=HabibSem_tp-ci-cd \ -Dsonar.sources=. \ -Dsonar.host.url=https://sonarcloud.io \ -Dsonar.login=$SONAR_TOKEN           
