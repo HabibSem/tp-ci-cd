@@ -16,7 +16,7 @@ jobs:
         run: pip install pytest
  
       - name: Exécuter les tests
-        run: python -m unittest test.py
+        run: python -m unittest test.app.py
      
  
   security:
