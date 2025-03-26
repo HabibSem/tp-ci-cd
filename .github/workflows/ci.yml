@@ -1,34 +1,48 @@
-name: CI/CD Pipeline 
+name: Test Python App
+on: [push, pull_request]
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Récupérer le code
+        uses: actions/checkout@v3
  
-on: [push] 
+      - name: Installer Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.x
  
-jobs: 
-  test: 
-    runs-on: ubuntu-latest 
-    steps: 
-      - name: Récupérer le code 
-        uses: actions/checkout@v3 
+      - name: Installer les dépendances
+        run: pip install pytest
  
-      - name: Installer Python 
-        uses: actions/setup-python@v4 
-        with: 
-          python-version: 3.x 
+      - name: Exécuter les tests
+        run: python -m unittest test.py
+     
  
-      - name: Installer les dépendances 
-        run: pip install -r requirements.txt 
+  security:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+      - name: Installer SonarScanner
+        run: |
+          curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+          unzip sonar-scanner.zip
+          echo "$PWD/sonar-scanner-5.0.1.3006-linux/bin" >> $GITHUB_PATH
  
-      - name: Exécuter les tests 
-        run: python -m unittest test_app.py 
+      - name: Analyse du code avec SonarQube
+        run: |
+          sonar-scanner \
+          -Dsonar.organization=habibsem \
+          -Dsonar.projectKey=HabibSem_tp-ci-cd \
+          -Dsonar.sources=. \
+          -Dsonar.host.url=https://sonarcloud.io \
+          -Dsonar.token=${{secrets.SONAR_TOKEN}}
  
-  deploy: 
-    needs: test 
-    runs-on: ubuntu-latest 
-    steps: 
-      - name: Déclencher le déploiement sur Render 
-        run: | 
-          curl -X POST "https://api.render.com/deploy/srv-cvhsssiqgecs73d4hlv0?key=2UCZG7aHRU4"
-          
-
-      - name: Analyse du code avec SonarQube 
-        run: | 
-          sonar-scanner \ -Dsonar.organization=habibsem \ -Dsonar.projectKey=HabibSem_tp-ci-cd \ -Dsonar.sources=. \ -Dsonar.host.url=https://sonarcloud.io \ -Dsonar.login=$SONAR_TOKEN           
+ 
+  deploy:
+    needs: security
+    runs-on: ubuntu-latest
+    steps:
+      - name: Déclencher le déploiement sur Render
+        run: |
+          curl -X POST "https://api.render.com/deploy/srv-cvhs5hd2ng1s739un0q0?key=z-iifhu8zGs"
